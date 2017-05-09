@@ -1,6 +1,7 @@
 from yowsup.structs import ProtocolEntity, ProtocolTreeNode
 from .message_media_downloadable import DownloadableMediaMessageProtocolEntity
 from yowsup.common.tools import VideoTools
+from .builder_message_media_downloadable import DownloadableMediaMessageBuilder
 
 class VideoDownloadableMediaMessageProtocolEntity(DownloadableMediaMessageProtocolEntity):
     '''
@@ -13,12 +14,9 @@ class VideoDownloadableMediaMessageProtocolEntity(DownloadableMediaMessageProtoc
             ip="{{IP}}"
             size="{{MEDIA SIZE}}"
             file="{{FILENAME}}"
-
-
             encoding="{{ENCODING}}"
             height="{{IMAGE_HEIGHT}}"
             width="{{IMAGE_WIDTH}}"
-
             origin="forward"
             > {{THUMBNAIL_RAWDATA (JPEG?)}}
         </media>
@@ -84,25 +82,25 @@ class VideoDownloadableMediaMessageProtocolEntity(DownloadableMediaMessageProtoc
         mediaNode.setAttribute("height",    str(self.height))
         mediaNode.setAttribute("width",     str(self.width))
         if self.abitrate is not None:
-        	mediaNode.setAttribute("abitrate",  str(self.abitrate))
+            mediaNode.setAttribute("abitrate",  str(self.abitrate))
         if self.acodec is not None:
-        	mediaNode.setAttribute("acodec",    self.acodec)
+            mediaNode.setAttribute("acodec",    self.acodec)
         if self.asampfmt is not None:
-        	mediaNode.setAttribute("asampfmt",  self.asampfmt)
+            mediaNode.setAttribute("asampfmt",  self.asampfmt)
         if self.asampfreq is not None:
-        	mediaNode.setAttribute("asampfreq", str(self.asampfreq))
+            mediaNode.setAttribute("asampfreq", str(self.asampfreq))
         if self.duration is not None:
-        	mediaNode.setAttribute("duration",  str(self.duration))
+            mediaNode.setAttribute("duration",  str(self.duration))
         if self.fps is not None:
-        	mediaNode.setAttribute("fps",       str(self.fps))
+            mediaNode.setAttribute("fps",       str(self.fps))
         if self.seconds is not None:
-        	mediaNode.setAttribute("seconds",   str(self.seconds))
+            mediaNode.setAttribute("seconds",   str(self.seconds))
         if self.vbitrate is not None:
-        	mediaNode.setAttribute("vbitrate",  str(self.vbitrate))
+            mediaNode.setAttribute("vbitrate",  str(self.vbitrate))
         if self.vcodec is not None:
-        	mediaNode.setAttribute("vcodec",    self.vcodec)
+            mediaNode.setAttribute("vcodec",    self.vcodec)
         if self.caption is not None:
-        	mediaNode.setAttribute("caption",   self.caption)
+            mediaNode.setAttribute("caption",   self.caption)
 
         return node
 
@@ -112,31 +110,42 @@ class VideoDownloadableMediaMessageProtocolEntity(DownloadableMediaMessageProtoc
         entity.__class__ = VideoDownloadableMediaMessageProtocolEntity
         mediaNode = node.getChild("media")
         entity.setVideoProps(
-        	mediaNode.getAttributeValue("encoding"),
-        	mediaNode.getAttributeValue("width"),
-        	mediaNode.getAttributeValue("height"),
-        	mediaNode.getAttributeValue("vbitrate"),
-        	mediaNode.getAttributeValue("abitrate"),
-        	mediaNode.getAttributeValue("acodec"),
-        	mediaNode.getAttributeValue("asampfmt"),
-        	mediaNode.getAttributeValue("asampfreq"),
-        	mediaNode.getAttributeValue("duration"),
-        	mediaNode.getAttributeValue("fps"),
-        	mediaNode.getAttributeValue("seconds"),
-        	mediaNode.getAttributeValue("vcodec"),
-        	mediaNode.getAttributeValue("caption")
+            mediaNode.getAttributeValue("encoding"),
+            mediaNode.getAttributeValue("width"),
+            mediaNode.getAttributeValue("height"),
+            mediaNode.getAttributeValue("vbitrate"),
+            mediaNode.getAttributeValue("abitrate"),
+            mediaNode.getAttributeValue("acodec"),
+            mediaNode.getAttributeValue("asampfmt"),
+            mediaNode.getAttributeValue("asampfreq"),
+            mediaNode.getAttributeValue("duration"),
+            mediaNode.getAttributeValue("fps"),
+            mediaNode.getAttributeValue("seconds"),
+            mediaNode.getAttributeValue("vcodec"),
+            mediaNode.getAttributeValue("caption")
         )
         return entity
 
     @staticmethod
+    def getBuilder(jid, filepath):
+        return DownloadableMediaMessageBuilder(VideoDownloadableMediaMessageProtocolEntity, jid, filepath)
+ 
+    @staticmethod
     def fromFilePath(path, url, ip, to, mimeType = None, caption = None):
-        preview = VideoTools.generatePreviewFromVideo(path)
-        entity = DownloadableMediaMessageProtocolEntity.fromFilePath(path, url, DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_VIDEO, ip, to, mimeType, preview)
-        entity.__class__ = VideoDownloadableMediaMessageProtocolEntity
+        #preview = VideoTools.generatePreviewFromVideo(path)
+        #entity = DownloadableMediaMessageProtocolEntity.fromFilePath(path, url, DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_VIDEO, ip, to, mimeType, preview)
+        #entity.__class__ = VideoDownloadableMediaMessageProtocolEntity
 
-        width, height, bitrate, duration = VideoTools.getVideoProperties(path)
-        assert width, "Could not determine video properties"
+        #width, height, bitrate, duration = VideoTools.getVideoProperties(path)
+        #assert width, "Could not determine video properties"
 
-        duration = int(duration)
-        entity.setVideoProps('raw', width, height, duration=duration, seconds=duration, caption=caption)
-        return entity
+        #duration = int(duration)
+        #entity.setVideoProps('raw', width, height, duration=duration, seconds=duration, caption=caption)
+        #return entity
+        builder = VideoDownloadableMediaMessageProtocolEntity.getBuilder(to, path)
+        builder.set("url", url)
+        builder.set("ip", ip)
+        #builder.set("caption", caption)
+        builder.set("mimetype", mimeType)
+        #builder.set("dimensions", dimensions)
+        return VideoDownloadableMediaMessageProtocolEntity.fromBuilder(builder)
